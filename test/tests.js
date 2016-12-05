@@ -15,7 +15,7 @@ var Tests = (function() {
       assertDefined( typeof Liquid.Template,  "Liquid.Template is missing" );
       assertDefined( typeof Liquid.Drop,      "Liquid.Drop is missing" );
       assertDefined( typeof Liquid.Tag,       "Liquid.Tag is missing" );
-      assertDefined( typeof Liquid.Block,     "Liquid.Tag is missing" );
+      assertDefined( typeof Liquid.Block,     "Liquid.Block is missing" );
     },
 
     "Plain text pass-thru": function() {
@@ -48,7 +48,7 @@ var Tests = (function() {
       assertEqual( '1,2,3,4,5', render('{{ (1..5) }}')  )
     },
     "{{ (a..e) }}": function() {
-      assertEqual( 'a,b,c,d,e', render('{{(a..e)}}')  )
+      assertEqual('1,2,3,4,5', render('{{(a..e)}}', { a: 1, e: 5 }))
     },
 
     '{{ varname }}': function() {
@@ -425,6 +425,10 @@ var Tests = (function() {
       assertEqual(" 0  1  2 ", render("{% for item in (1..3) %} {{ forloop.index0 }} {% endfor %}"));
       assertEqual(" true  false  false ", render("{% for item in (1..3) %} {{ forloop.first }} {% endfor %}"));
       assertEqual(" false  false  true ", render("{% for item in (1..3) %} {{ forloop.last }} {% endfor %}"));
+      assertEqual(" 0  1  2 ", render("{% for item in data %} {{ item }} {% endfor %}", { data: [0, 1, 2] }));
+      assertEqual(" 0  1  2 ", render("{% for item in (0..n) %} {{ item }} {% endfor %}", { n: 2 }));
+      assertEqual(" 1  2  3 ", render("{% assign n = 3 %}{% for item in (1..n) %} {{ item }} {% endfor %}"));
+      assertEqual(" 2  3  4 ", render("{% for item in (x..y) %} {{ item }} {% endfor %}", { x: 2, y: 4 }));
       // TODO: Add test for the rest of the forloop variables too...
     },
 
@@ -513,6 +517,18 @@ var Tests = (function() {
       // TODO Consider using a Context object directly instead, calling variable on it directly
       assertEqual("", render("{{ collection['missing_key'].value }}"))
       assertEqual("", render("{{ collection['missing_key'].value }}", {collection: {}}))
+    },
+
+    note5: "Testing whitespace...",
+
+    "{{ 'whitespace' }}": function() {
+      assertEqual( '\nwhitespace\n', render('\n{{"whitespace"}}\n')  )
+      assertEqual( ' whitespace ', render(' {{"whitespace"}} ')  )
+      assertEqual( 'whitespace', render('{{-"whitespace"-}}')  )
+      assertEqual( 'whitespace', render(' {{-"whitespace"-}} ')  )
+      assertEqual( 'whitespace', render('\n{{-"whitespace"-}}\n')  )
+      assertEqual( 'whitespace ', render(' {{-"whitespace"}} ')  )
+      assertEqual( ' whitespace', render(' {{"whitespace"-}} ')  )
     }
   }
 })();
